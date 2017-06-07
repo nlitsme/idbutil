@@ -2,8 +2,15 @@
 # or pass them as variables on the make commandline.
 -include ../idacfg.mk
 
-ifeq ($(wildcard $(idasdk)/include/ida.hpp),)
+space=$(empty) $(empty)
+escapespaces=$(subst $(space),\ ,$1)
+fileexists=$(wildcard $(call escapespaces,$1))
+
+ifeq ($(call fileexists,$(idasdk)/include/ida.hpp),)
 $(error The `idasdk` variable does not point to a directory containing an include directory with the ida headers.)
+endif
+ifeq ($(call fileexists,$(idabin)/libida.dylib),)
+$(error The `idabin` variable does not point to a directory containing the ida binaries.)
 endif
 
 APPS=idbtool unittests
