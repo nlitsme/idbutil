@@ -322,6 +322,8 @@ void dumplicense(const char *tag, const std::string& user)
         return;
 
     auto et = EndianTools();
+    if (et.getle32(&user[106], &user[110]))
+        return;
     uint16_t licver= et.getle16(&user[2], &user[0]+user.size());
     if (licver==0) {
         // before v5.3
@@ -350,7 +352,9 @@ void printidbinfo(ID0File& id0)
     uint64_t rootnode= id0.node("Root Node");
     std::string params= id0.getdata(rootnode, 'S', 0x41b994);
     std::string cpu{&params[5], &params[5+8]};
-    cpu.erase(cpu.find(char(0)));
+    auto nulpos = cpu.find(char(0));
+    if (nulpos != cpu.npos)
+        cpu.resize(nulpos);
     print("cpu: %-8s,  idaversion=%04d: %s\n", cpu,
             id0.getuint(rootnode, 'A', -1), id0.getstr(rootnode, 'S', 1303));
     print("nopens=%d, ctime=%s, crc=%08x, binary md5=%b\n", 
