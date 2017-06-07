@@ -1,0 +1,3 @@
+[submodule "cpputils"]
+	path = cpputils
+	url = https://github.com/nlitsme/cpputils
