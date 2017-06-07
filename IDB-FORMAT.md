@@ -197,6 +197,7 @@ In the SDK, in the file `nalt.hpp` there are many more items defined.
 These are some of the regularly used ones.
 
 | key | value | description
+| :-- | :---- | :----------
 | (addr, 'D', fromaddr) | reftype | data xref from
 | (addr, 'd', toaddr) | reftype | data xref to
 | (addr, 'X', fromaddr) | reftype | code xref from
