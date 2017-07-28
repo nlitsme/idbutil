@@ -379,17 +379,20 @@ void printidbinfo(ID0File& id0)
 /*
  * print all nodes in sequential order
  */
-void dumpnodes(ID0File& id0, bool ascending)
+void dumpnodes(ID0File& id0, bool ascending, int limit)
 {
     auto c = ascending ? id0.find(REL_GREATER_EQUAL, "")
                        : id0.find(REL_LESS_EQUAL, "\xFF\xFF\xFF\xFF");
-    while (!c.eof())
+    while (!c.eof() && limit!=0)
     {
         print("%-b = %-b\n", c.getkey(), c.getval());
         if (ascending)
             c.next();
         else
             c.prev();
+
+        if (limit>0)
+            limit--;
     }
 }
 
@@ -481,8 +484,8 @@ void queryidb(ID0File& id0, const std::string& query, bool ascending, int limit)
     if (flags==0) flags = FL_EQ;
 
     auto c = id0.find(xlat_relation(flags), createkey(id0, key, &query[0]+query.size()));
-    int n = 0;
-    while (!c.eof() && n<limit)
+
+    while (!c.eof() && limit!=0)
     {
         print("%-b = %-b\n", c.getkey(), c.getval());
         if (flags == FL_EQ)
@@ -491,7 +494,8 @@ void queryidb(ID0File& id0, const std::string& query, bool ascending, int limit)
             c.next();
         else
             c.prev();
-        n++;
+        if (limit>0)
+            limit--;
     }
 }
 
@@ -554,7 +558,7 @@ void processidb(const std::string& fn, int flags, const std::string& query, cons
     if (flags&QUERY_IDB)
         queryidb(id0, query, !(flags&DUMP_DESCENDING), limit);
     else if (flags&(DUMP_ASCENDING|DUMP_DESCENDING))
-        dumpnodes(id0, flags&DUMP_ASCENDING);
+        dumpnodes(id0, flags&DUMP_ASCENDING, limit);
 
     if (flags&DUMP_DATABASE) {
         id1.dump_info();
@@ -569,7 +573,7 @@ int main(int argc, char**argv)
     std::vector<std::string> idbnames;
     std::vector<uint64_t> addrs;
     std::string query;
-    int limit = 10;
+    int limit = -1;
 
     int flags= 0;
 
