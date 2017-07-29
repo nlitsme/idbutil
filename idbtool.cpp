@@ -178,7 +178,13 @@ void printidbstructs(ID0File& id0)
     auto list = List<Struct>(id0, id0.node("$ structs"));
 
     while (!list.eof())
-        dumpstruct(list.next());
+        try {
+            dumpstruct(list.next());
+        }
+        catch(const char*msg)
+        {
+            print("struct entry with error found\n");
+        }
 }
 void printidbenums(ID0File& id0)
 {
