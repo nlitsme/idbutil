@@ -5,6 +5,8 @@ A tool for extracting information from IDA databases.
 `idbtool` knows how to handle databases from all IDA versions since v2.0, both `i64` and `idb` files.
 You can also use `idbtool` to recover information from unclosed databases.
 
+`idbtool` works without change with IDA v7.0.
+
 
 Much faster than loading a file in IDA
 --------------------------------------
@@ -17,6 +19,9 @@ More precisely: on my laptop it takes:
  *  3.8 seonds to print idb info for 441 files.
  *  5.6 seconds to extract 281 enums containing 4726 members from 35 files.
  * 67.8 seconds to extract 5942 structs containing 33672 members from 265 files.
+
+Loading a approximately 5 Gbyte idb file in IDA, takes about 45 minutes.
+While idb3.h takes basically no time at all, no more than a few milliseconds.
 
 
 Download
