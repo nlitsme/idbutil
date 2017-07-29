@@ -1606,15 +1606,19 @@ public:
 // NAMFile keeps a list of named items.
 class NAMFile {
 private:
-    std::set<uint64_t> _namedoffsets;
+    mutable std::vector<uint64_t> _namedoffsets;
+    mutable bool _namesloaded;
 
     stream_ptr _is;
     int _wordsize;
+
+    uint32_t _nnames;
+    uint64_t _listofs;
 public:
     enum { INDEX = 2 };  // argument for idb.getsection()
 
     NAMFile(IDBFile& idb, stream_ptr  is)
-        : _is(is)
+        : _namesloaded(false), _is(is)
     {
         if (idb.magic() == IDBFile::MAGIC_IDA2)
             _wordsize = 8;
@@ -1631,19 +1635,17 @@ public:
         s.seekg(0);
         uint32_t magic = s.get32le();
 
-        uint32_t nnames;
-        uint64_t listofs;
         if ((magic&0xFFF0FFFF)==0x306156) { // Va0 .. Va4
             uint16_t npages = s.get16le();  // nr of chunks
             uint16_t eof = s.get16le();
             uint64_t unknown = s.getword();
             (void)npages; (void)eof; // value not used
 
-            nnames = s.getword();  // nr of names
-            listofs = s.getword(); // page size
+            _nnames = s.getword();  // nr of names
+            _listofs = s.getword(); // page size
 
             dbgprint("nam: np=%d, eof=%d, nn=%d, ofs=%08x\n",
-                    npages, eof, nnames, listofs);
+                    npages, eof, _nnames, _listofs);
             if (unknown)
                 print("!! nam.unknown=%08x\n", unknown);
         }
@@ -1655,38 +1657,50 @@ public:
             uint64_t unknown = s.getword(); // 0
             (void)unk1; (void)npages;  (void)unk2; (void)eof; (void)unknown; // values not used
 
-            listofs = 0x2000;
-            nnames = s.getword();  // nr of names
+            _listofs = 0x2000;
+            _nnames = s.getword();  // nr of names
 
             dbgprint("nam: np=%d, eof=%d, nn=%d, ofs=%08x\n",
-                    npages, eof, nnames, listofs);
+                    npages, eof, _nnames, _listofs);
         }
         else {
             throw "invalid NAM";
         }
 
         if (_wordsize==8)
-            nnames /= 2;
+            _nnames /= 2;
+    }
+    void loadoffsets() const
+    {
+        if (_namesloaded)
+            return;
+        _namedoffsets.reserve(_nnames);
 
-        s.seekg(listofs);
-        for (unsigned i=0 ; i<nnames ; i++)
-            _namedoffsets.insert(s.getword());
+        auto s = makehelper(_is, _wordsize);
+        s.seekg(_listofs);
+        for (unsigned i=0 ; i<_nnames ; i++)
+            _namedoffsets.push_back(s.getword());
+
+        _namesloaded = true;
     }
     int numnames() const
     {
+        loadoffsets();
         return _namedoffsets.size();
     }
     template<typename FN>
     void enumerate(FN fn) const
     {
+        loadoffsets();
         std::for_each(_namedoffsets.begin(), _namedoffsets.end(), fn);
     }
     // finds nearest named item
     uint64_t findname(uint64_t ea) const
     {
+        loadoffsets();
         if (_namedoffsets.empty())
             return BADADDR;
-        std::set<uint64_t>::const_iterator i= _namedoffsets.upper_bound(ea);
+        auto i= std::upper_bound(_namedoffsets.begin(), _namedoffsets.end(), ea);
         if (i==_namedoffsets.begin()) {
             // address before first: return first named item
             return *i;
@@ -1697,6 +1711,7 @@ public:
 
     uint64_t firstnamed() const
     {
+        loadoffsets();
         if (_namedoffsets.empty())
             return BADADDR;
         return *_namedoffsets.begin();
