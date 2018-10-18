@@ -22,7 +22,7 @@ idbtool: idbtool.o
 
 ldflags_idbtool=-lz -L/usr/local/lib -lgmp
 
-CFLAGS=-std=c++1z -fPIC $(if $(D),-O0,-O3) -g -Wall -I /usr/local/include -I cpputils -I $(idasdk)/include/ -D__MAC__
+CFLAGS=-std=c++1z -fPIC $(if $(D),-O0,-O3) -g -Wall -I /usr/local/include -I cpputils -I $(idasdk)/include/
 CFLAGS+=-DUSE_STANDARD_FILE_FUNCTIONS  
 CFLAGS+=-DUSE_DANGEROUS_FUNCTIONS
 LDFLAGS=-g -Wall
