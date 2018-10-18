@@ -6,6 +6,9 @@
  */
 #include <fstream>
 #include <iostream>
+#include <memory>
+#include <algorithm>
+#include <climits>
 #include "idb3.h"
 #include "argparse.h"
 
