@@ -6,15 +6,21 @@
  */
 #include <fstream>
 #include <iostream>
+#include <memory>
+#include <algorithm>
+#include <climits>
 #include "idb3.h"
 #include "argparse.h"
 
+#ifdef HAVE_LIBGMP
 #include "gmpxx.h"
+#endif
 #include "formatter.h"
 #include "stringlibrary.h"
 
 int verbose = 0;
 
+#ifdef HAVE_LIBGMP
 /*
  *  decode license info from idb
  */
@@ -77,6 +83,7 @@ std::string decryptuser(const std::string& encvector)
 
     return mpztoms(sizeof(modbytes)-1, res);
 }
+#endif
 
 /*
  *  dump structs + unions
@@ -369,6 +376,7 @@ void printidbinfo(ID0File& id0)
             id0.getuint(rootnode, 'A', -5),
             id0.getdata(rootnode, 'S', 1302));
 
+#ifdef HAVE_LIBGMP
     std::string originaluser= id0.getdata(id0.node("$ original user"), 'S', 0);
 //  this is privkey encrypted ( decrypts to user1 contents )
 //  note: number is stored LSB first
@@ -380,6 +388,7 @@ void printidbinfo(ID0File& id0)
 
     dumplicense("orig: ", user0);
     dumplicense("curr: ", user1);
+#endif
 }
 
 /*

@@ -581,6 +581,7 @@ public:
         : _is(is), _pagesize(pagesize), _nr(nr), _preceeding(0), _count(0)
     {
     }
+    virtual ~BasePage() {}
     uint32_t nr() const { return _nr; }
 
     bool isindex() const { return _preceeding!=0; }
