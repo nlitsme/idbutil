@@ -191,6 +191,18 @@ The struct member nodes:
 | (id, 'S', 0x3000) | typeinfo
 
 
+### history
+
+The `$ curlocs` list contains several location histories:
+
+For example, the `$ IDA View-A` netnode contains the following keys:
+ * `A 0` - highest history supval item 
+ * `A 1` - number of history items
+ * `A 2` - object type: `idaplace_t`
+ * `S <num>` - packed history item: itemlinenr, ea\_t, int, int, colnr, rownr
+
+ 
+
 ### normal addresses
 
 In the SDK, in the file `nalt.hpp` there are many more items defined.
