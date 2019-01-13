@@ -20,7 +20,7 @@ More precisely: on my laptop it takes:
  *  5.6 seconds to extract 281 enums containing 4726 members from 35 files.
  * 67.8 seconds to extract 5942 structs containing 33672 members from 265 files.
 
-Loading a approximately 5 Gbyte idb file in IDA, takes about 45 minutes.
+Loading an approximately 5 Gbyte idb file in IDA, takes about 45 minutes.
 While idb3.h takes basically no time at all, no more than a few milliseconds.
 
 
@@ -38,7 +38,7 @@ One written in C++
 Both repositories contain a library which can be used for reading `.idb` or `.i64` files.
 
 
-An IDApro plugin making use of `idb3.h` can be found here:
+An IDA Pro plugin making use of `idb3.h` can be found here:
  * https://github.com/nlitsme/idbimport
 
 This is a plugin making it easy to copy scripts, structs or enums from recent ida databases.
@@ -65,16 +65,16 @@ Usage:
 
 All addresses after `--` will be printed as `symbol+offset`.
 
-query
+Query
 -----
 
-Queries need to be specified last on the commandline.
+Queries need to be specified last on the command line.
 
-example:
+Example:
 
     idbtool [database file(s)]  --query  "Root Node;V"
 
-Will list the source binary for all the databases specified on the commandline.
+Will list the source binary for all the databases specified on the command line.
 
 A query is a string with the following format:
 
@@ -87,13 +87,13 @@ A query is a string with the following format:
  * an optional tag ( A for Alt, S for Supval, etc )
  * an optional index value
 
-example queries:
+Example queries:
  * `Root Node;V` -> prints record containing the source binary name
  * `?Root Node` -> prints the Name record pointing to the root
  * `>Root Node` -> prints the first 10 records starting with the root node id.
- * `<Root Node` -> prints the 10 records startng with the recordsbefore the rootnode.
- * `.0xff000001;N` -> prints the rootnode name entry.
- * `#1;N` -> prints the rootnode name entry.
+ * `<Root Node` -> prints the 10 records startng with the records before the root node.
+ * `.0xff000001;N` -> prints the root node name entry.
+ * `#1;N` -> prints the root node name entry.
 
 List the highest node and following record in the database in two different ways,
 the first: starting at the first record below `ffc00000`, and listing the next.
@@ -124,7 +124,7 @@ data from corrupted databases.
 LIBRARY
 =======
 
-The headerfile `idb3.h` contains a library for reading from IDApro databases.
+The header file `idb3.h` contains a library for reading from IDA Pro databases.
 
 
 ## IDBFile
@@ -150,7 +150,7 @@ Constant
 
 ## ID0File
 
-methods
+Methods
  * `Cursor find(relation_t, nodeid, ...)` 
     * `...`  can be: 
        * tag, index
@@ -169,7 +169,7 @@ methods
  * `void enumlist(uint64_t nodeid, char tag, CB cb)`
     * call `cb` for each value in the list.
 
-convenience methods
+Convenience Methods
  * `std::string getdata(ARGS...args)`
  * `std::string getstr(ARGS...args)`
  * `uint64_t getuint(ARGS...args)`
@@ -180,19 +180,19 @@ convenience methods
 
 ## ID1File
 
-methods
+Methods
  * `uint32_t GetFlags(uint64_t ea)`
 
 
 ## NAMFile
 
-methods
+Methods
  * `uint64_t findname(uint64_t ea)`
 
 
 ## Cursor
 
-methods
+Methods
  * `void next()`
     * move cursor to the next btree record
  * `void prev()`
@@ -204,7 +204,7 @@ methods
  * `std::string `getval()`
     * return the value pointed to by the cursor
 
-TODe
+TODO
 ====
 
  * add option to list all comments stored in the database
