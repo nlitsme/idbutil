@@ -63,6 +63,7 @@ public:
     streamhelper(ISPTR is, int wordsize)
         : _is(is), _wordsize(wordsize)
     {
+        _is->exceptions(std::ifstream::failbit | std::ifstream::badbit);
     }
     uint8_t get8()
     {
@@ -127,13 +128,13 @@ public:
         dbgprint("getdata -> %b\n", str);
         return str;
     }
-    std::istream& seekg( std::istream::off_type off, std::ios_base::seekdir dir)
+    void seekg( std::istream::off_type off, std::ios_base::seekdir dir)
     {
-        return _is->seekg(off, dir);
+        _is->seekg(off, dir);
     }
-    std::istream& seekg( std::istream::pos_type pos )
+    void seekg( std::istream::pos_type pos )
     {
-        return _is->seekg(pos);
+        _is->seekg(pos);
     }
 };
 
