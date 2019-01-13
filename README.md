@@ -209,6 +209,7 @@ TODO
 
  * add option to list all comments stored in the database
  * support compressed sections
+ * add option to list flags for a list of addresses.
 
 Author
 ======
