@@ -18,17 +18,20 @@ all: $(APPS)
 clean: 
 	$(RM) $(APPS)  $(wildcard *.o)
 
-CXX=clang++
-
 unittests: unittests.o
 idbtool: idbtool.o
 
 ldflags_idbtool=-lz -L/usr/local/lib -lgmp
 
-CFLAGS=-std=c++1z -fPIC $(if $(D),-O0,-O3) -g -Wall -I /usr/local/include -I cpputils -I $(idasdk)/include/ -D__MAC__
+CFLAGS+=-std=c++1z -fPIC $(if $(D),-O0,-O3) -g -Wall -I /usr/local/include -I cpputils -I $(idasdk)/include/
+
+CFLAGS+=$(if $(__MAC__),-D__MAC__)
+CFLAGS+=$(if $(__LINUX__),-D__LINUX__)
+CFLAGS+=$(if $(__NT__),-D__NT__)
+
 CFLAGS+=-DUSE_STANDARD_FILE_FUNCTIONS  
 CFLAGS+=-DUSE_DANGEROUS_FUNCTIONS
-LDFLAGS=-g -Wall
+LDFLAGS+=-g -Wall
 
 %.o: %.cpp
 	$(CXX) -c $^ -o $@ $(cflags_$(basename $(notdir $@))) $(CFLAGS)
