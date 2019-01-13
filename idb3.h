@@ -13,6 +13,7 @@
 #include <vector>
 #include <set>
 #include <cassert>
+#include <memory>
 #include "formatter.h"
 
 #define dbgprint(...)
