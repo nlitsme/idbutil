@@ -1725,6 +1725,7 @@ public:
 class BaseUnpacker  {
 public:
     virtual bool eof() const = 0;
+    virtual uint32_t next16() = 0;
     virtual uint32_t next32() = 0;
     virtual uint64_t nextword() = 0;
     virtual ~BaseUnpacker() { }
@@ -1746,9 +1747,32 @@ class Unpacker : public BaseUnpacker {
     }
 
     /*
-     *  1 byte - values 0 .. 0x7f
-     *  2 byte - values 0x80 .. 0x3fff,  orred with 0x8000
-     *  4 byte - values 0x4000 .. 0x1fffffff, orred with 0xc0000000
+     *  7 bit  - values 0 .. 0x7f
+     *  14 bit - values 0x80 .. 0x3fff,  orred with 0x8000
+     *  0xFF + 2 byte - any 16 bit val
+     */
+    uint16_t next16()
+    {
+        if (_p>=_last)  throw "unpack: no data";
+        uint8_t byte = *_p++;
+        if (byte==0xff) {
+            if (_p+2>_last)  throw "unpack: no data";
+            uint16_t value = EndianTools::getbe16(_p, _last);
+            _p += 2;
+            return value;
+        }
+        if (byte<0x80)
+            return byte;
+        _p--;
+        if (_p+2>_last)  throw "unpack: no data";
+        uint16_t value = EndianTools::getbe16(_p, _last) & 0x3FFF;  _p += 2;
+        return value;
+    }
+
+    /*
+     *  7 bit - values 0 .. 0x7f
+     *  14 bit - values 0x80 .. 0x3fff,  orred with 0x8000
+     *  29 bit - values 0x4000 .. 0x1fffffff, orred with 0xc0000000
      *
      *  0xFF + 4 byte - any 32 bit val  - in .idb
      *
