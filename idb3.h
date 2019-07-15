@@ -1846,6 +1846,19 @@ inline uint64_t minusone(uint64_t id)
 // 'D'  xref-to    -> points to type users
 
 class StructMember {
+    /*
+     *    (membernode, N)          = struct.member-name
+     *    (membernode, A, 3)       = structid+1
+     *    (membernode, A, 8)       = 
+     *    (membernode, A, 11)      = enumid+1
+     *    (membernode, A, 16)      = flag?  -- 4:variable length flag?
+     *    (membernode, S, 0x3000)  = type (set with 'Y')
+     *    (membernode, S, 0x3001)  = names used in 'type'
+     *    (membernode, S, 5)       = array type?
+     *    (membernode, S, 9)       = offset-type
+     *    (membernode, D, address) = xref-type
+     *    (membernode, d, structid) = xref-type   -- for sub-structs
+     */
     ID0File& _id0;
     uint64_t _nodeid;
     uint64_t _skip;  // nr of bytes to skip before this member
@@ -1896,12 +1909,20 @@ public:
 
 // access structs and struct members.
 class Struct {
+    /*
+     *    (structnode, N)          = structname
+     *    (structnode, D, address) = xref-type
+     *    (structnode, M, 0)       = packed struct info
+     *    (structnode, S, 27)      = packed value(addr, byte)
+     */
     ID0File& _id0;
     uint64_t _nodeid;
 
     uint32_t _flags;
     std::vector<StructMember> _members;
     uint32_t _seqnr;
+
+    uint32_t _size;
 
     class Iterator : public std::iterator<std::random_access_iterator_tag, StructMember> {
         const Struct* _s;
@@ -1952,6 +1973,7 @@ public:
             _members.back().setofs(ofs);
             ofs += _members.back().size();
         }
+        _size = ofs;
         if (!p.eof())
             _seqnr = p.next32();
         else
@@ -1962,6 +1984,7 @@ public:
     int nmembers() const { return _members.size(); }
     uint32_t flags() const { return _flags; }
     uint32_t seqnr() const { return _seqnr; }
+    uint32_t size() const { return _size; }
 
     Iterator begin() const { return Iterator(this, 0); }
     Iterator end() const { return Iterator(this, nmembers()); }
@@ -1971,6 +1994,11 @@ public:
 };
 
 class EnumMember {
+    /*
+     *   (membernode, N)      = membername
+     *   (membernode, A, -2)  = enumnode + 1
+     *   (membernode, A, -3)  = member value
+     */
     ID0File& _id0;
     uint64_t _nodeid;
     uint64_t _value;
@@ -1992,6 +2020,14 @@ public:
 // get properties of an enum.
 // bitfields and enums are both in the '$ enums' list.
 class Enum {
+    /*
+     *     (enumnode, N)     = enum-name
+     *     (enumnode, A, -1) = nr of values
+     *     (enumnode, A, -3) = representation
+     *     (enumnode, A, -5) = flags: bitfield, hidden, ...
+     *     (enumnode, A, -8) = 
+     *     (enumnode, E, value) = valuenode + 1
+     */
     ID0File& _id0;
     uint64_t _nodeid;
 
@@ -2158,6 +2194,16 @@ public:
 };
 template<typename T>
 class List {
+    /*
+     *  (listnode, 'N')           = listname
+     *  (listnode, 'A', -1)       = list size      <-- not for '$ scriptsnippets'
+     *  (listnode, 'A', seqnr)    = itemnode+1
+     *
+     *  (listnode, 'Y', itemnode) = seqnr          <-- only for '$ enums'
+     *
+     *  (listnode, 'Y', 0)        = list size      <-- only for '$ scriptsnippets'
+     *  (listnode, 'Y', 1)        = ?              <-- only for '$ scriptsnippets'
+     */
     ID0File& _id0;
     BtreeBase::Cursor _c;
     std::string _endkey;
