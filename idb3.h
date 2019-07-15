@@ -1725,7 +1725,7 @@ public:
 class BaseUnpacker  {
 public:
     virtual bool eof() const = 0;
-    virtual uint32_t next16() = 0;
+    virtual uint16_t next16() = 0;
     virtual uint32_t next32() = 0;
     virtual uint64_t nextword() = 0;
     virtual ~BaseUnpacker() { }
