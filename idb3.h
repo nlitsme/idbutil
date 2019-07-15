@@ -64,7 +64,7 @@ public:
     streamhelper(ISPTR is, int wordsize)
         : _is(is), _wordsize(wordsize)
     {
-        _is->exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        _is->exceptions(std::istream::failbit | std::istream::badbit);
     }
     uint8_t get8()
     {
