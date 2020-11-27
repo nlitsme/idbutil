@@ -13,6 +13,8 @@
 #include <vector>
 #include <set>
 #include <cassert>
+#include <climits>
+#include <algorithm>
 #include <memory>
 #include "formatter.h"
 
@@ -453,7 +455,7 @@ MAGIC_IDA0 = 0x30414449,
     void dump()
     {
         print("IDB v%d, m=%08x\n", _fileversion, _magic);
-        for (int i=0 ; i<std::max(_offsets.size(), _checksums.size()) ; i++)
+        for (unsigned int i=0 ; i<std::max(_offsets.size(), _checksums.size()) ; i++)
             print("%d: %10llx %08x\n", i, i<_offsets.size() ? _offsets[i] : -1, i<_checksums.size() ? _checksums[i] : -1);
     }
     auto getinfo(int i)
@@ -520,7 +522,7 @@ protected:
         bool operator==(const IntIter& rhs) {return _ix==rhs._ix;}
         bool operator!=(const IntIter& rhs) {return _ix!=rhs._ix;}
 
-        int operator*() {return _ix;}
+        int operator*() const {return _ix;}
         int operator[](int i) {return _ix+i;}
 
         IntIter& operator++() {++_ix;return *this;}
@@ -596,7 +598,7 @@ public:
     {
         if (_preceeding)
             print("prec = %05x\n", _preceeding);
-        for (int i=0 ; i<_index.size() ; i++)
+        for (unsigned int i=0 ; i<_index.size() ; i++)
             print("%-b = %-b\n", getkey(i), getval(i));
     }
 
@@ -888,7 +890,7 @@ public:
 
         if (page->isindex()) {
             dumptree(page->getpage(-1));
-            for (int i=0 ; i<page->indexsize() ; i++)
+            for (unsigned int i=0 ; i<page->indexsize() ; i++)
                 dumptree(page->getpage(i));
         }
     }
