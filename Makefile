@@ -10,31 +10,76 @@ ifeq ($(call fileexists,$(idasdk)/include/ida.hpp),)
 $(error The `idasdk` variable does not point to a directory containing an include directory with the ida headers.)
 endif
 
+ifneq ($(wildcard $(SystemRoot)/explorer.exe $(SYSTEMROOT)/explorer.exe),)
+OSTYPE=windows
+CFLAGS+=-D__NT__=1
+
+IDA64LIB=$(idasdk)/lib/x64_win_vc_64/ida.lib
+IDA32LIB=$(idasdk)/lib/x64_win_vc_32/ida.lib
+L=.dll
+O=.obj
+DLLFLAGS=/dll
+endif
+ifneq ($(wildcard /System/Library/Extensions),)
+OSTYPE=darwin
+CFLAGS+=-D__MAC__=1
+
+IDA64LIB=$(idasdk)/lib/x64_mac_clang_64/libida64.dylib
+IDA32LIB=$(idasdk)/lib/x64_mac_clang_32/libida.dylib
+L=.dylib
+O=.o
+DLLFLAGS=-dynamiclib
+endif
+ifneq ($(wildcard /sbin/modprobe),)
+OSTYPE=linux
+CFLAGS+=-D__LINUX__=1
+
+IDA64LIB=$(idasdk)/lib/x64_linux_gcc_64/libida64.so
+IDA32LIB=$(idasdk)/lib/x64_linux_gcc_32/libida.so
+L=.so
+O=.o
+DLLFLAGS=--shared
+endif
+
 APPS=idbtool unittests
 all: $(APPS)
 clean: 
-	$(RM) $(APPS)  $(wildcard *.o)
+	$(RM) $(APPS)  $(wildcard *.o *.obj)
 
-unittests: unittests.o
-idbtool: idbtool.o
+unittests: $(notdir $(subst .cpp,$(O),$(wildcard tests/*.cpp)))
+	$(CXX) $(LDFLAGS) -o $@  $^
+idbtool: idbtool$(O)
 
 ldflags_idbtool=-lz -L/usr/local/lib -lgmp
 
-CFLAGS+=-std=c++1z -fPIC $(if $(D),-O0,-O3) -g -Wall -I /usr/local/include -I cpputils -I $(idasdk)/include/
-
-CFLAGS+=$(if $(__MAC__),-D__MAC__)
-CFLAGS+=$(if $(__LINUX__),-D__LINUX__)
-CFLAGS+=$(if $(__NT__),-D__NT__)
+CFLAGS+=-fPIC $(if $(D),-O0,-O3) -g -Wall -I /usr/local/include -I submodules/cpputils -I $(idasdk)/include/ -I .
 
 CFLAGS+=-DUSE_STANDARD_FILE_FUNCTIONS  
 CFLAGS+=-DUSE_DANGEROUS_FUNCTIONS
+ifneq ($(OSTYPE),windows)
 CFLAGS+=-DHAVE_LIBGMP
+endif
+
+# .. todo: on windows doctest build fails with DOCTEST_CHECK_THROWS - ident not found.
+#CFLAGS+=-DWITH_DOCTEST
+CFLAGS+=-DWITH_CATCH
+CFLAGS+=-DNOMINMAX -DWIN32_LEAN_AND_MEAN
+
 LDFLAGS+=-g -Wall
 
-%.o: %.cpp
+ifeq ($(OSTYPE),windows)
+CFLAGS+=-std:c++17
+else
+CFLAGS+=-std=c++17
+endif
+
+%$(O): tests/%.cpp
+	$(CXX) $(CFLAGS) -c $^ -o $@
+
+%$(O): %.cpp
 	$(CXX) -c $^ -o $@ $(cflags_$(basename $(notdir $@))) $(CFLAGS)
 
-%: %.o
+%: %$(O)
 	$(CXX)    $^ -o $@ $(ldflags_$(basename $(notdir $@))) $(LDFLAGS)
 
 install:
