@@ -6,10 +6,10 @@ An IDApro database consists of one large file which contains several sections.
 At the start of the `idb` or `i64` file there is a list of fileoffsets pointing
 to these sections.  Sections can optionally be stored compressed.
 When a database is opened by IDA the sections are extracted from the main data file
-and stored in seperate files. When you only need to read from the database, and don't
+and stored in separate files. When you only need to read from the database, and don't
 want to change anything, the splitting into `id0`, `id1`, `nam` and `til` files is not
 nescesary, IDApro does this anyway, since it expect the user to make changes to the database.
-Very old IDApro versions ( v1.6 and v2.0 ) store the sections seperately, such that
+Very old IDApro versions ( v1.6 and v2.0 ) store the sections separately, such that
 there could only be one database per directory.
 
 | index | extension | contents                   |
