@@ -1,0 +1,96 @@
+cmake:
+	cmake -B build . $(if $(D),-DCMAKE_BUILD_TYPE=Debug,-DCMAKE_BUILD_TYPE=Release) $(CMAKEARGS)
+	$(MAKE) -C build $(if $(V),VERBOSE=1)
+
+# either specify `idasdk` and `idabin` in this config file,
+# or pass them as variables on the make commandline.
+-include ../idacfg.mk
+
+space=$(empty) $(empty)
+escapespaces=$(subst $(space),\ ,$1)
+fileexists=$(wildcard $(call escapespaces,$1))
+
+ifeq ($(call fileexists,$(idasdk)/include/ida.hpp),)
+$(error The `idasdk` variable does not point to a directory containing an include directory with the ida headers.)
+endif
+
+ifneq ($(wildcard $(SystemRoot)/explorer.exe $(SYSTEMROOT)/explorer.exe),)
+OSTYPE=windows
+CFLAGS+=-D__NT__=1
+
+IDA64LIB=$(idasdk)/lib/x64_win_vc_64/ida.lib
+IDA32LIB=$(idasdk)/lib/x64_win_vc_32/ida.lib
+L=.dll
+O=.obj
+DLLFLAGS=/dll
+endif
+ifneq ($(wildcard /System/Library/Extensions),)
+OSTYPE=darwin
+CFLAGS+=-D__MAC__=1
+
+IDA64LIB=$(idasdk)/lib/x64_mac_clang_64/libida64.dylib
+IDA32LIB=$(idasdk)/lib/x64_mac_clang_32/libida.dylib
+L=.dylib
+O=.o
+DLLFLAGS=-dynamiclib
+endif
+ifneq ($(wildcard /sbin/modprobe),)
+OSTYPE=linux
+CFLAGS+=-D__LINUX__=1
+
+IDA64LIB=$(idasdk)/lib/x64_linux_gcc_64/libida64.so
+IDA32LIB=$(idasdk)/lib/x64_linux_gcc_32/libida.so
+L=.so
+O=.o
+DLLFLAGS=--shared
+endif
+
+APPS=idbtool unittests
+all: $(APPS)
+clean: 
+	$(RM) $(APPS)  $(wildcard *.o *.obj)
+	$(RM) -r build CMakeFiles CMakeCache.txt CMakeOutput.log
+
+unittests: $(notdir $(subst .cpp,$(O),$(wildcard tests/*.cpp)))
+	$(CXX) $(LDFLAGS) -o $@  $^
+idbtool: idbtool$(O)
+
+ldflags_idbtool=-lz -L/usr/local/lib -lgmp
+
+CFLAGS+=-fPIC $(if $(D),-O0,-O3) -g -Wall -I /usr/local/include -I submodules/cpputils -I $(idasdk)/include/ -I .
+
+CFLAGS+=-DUSE_STANDARD_FILE_FUNCTIONS  
+CFLAGS+=-DUSE_DANGEROUS_FUNCTIONS
+ifneq ($(OSTYPE),windows)
+CFLAGS+=-DHAVE_LIBGMP
+endif
+
+# .. todo: on windows doctest build fails with DOCTEST_CHECK_THROWS - ident not found.
+#CFLAGS+=-DWITH_DOCTEST
+CFLAGS+=-DWITH_CATCH
+CFLAGS+=-DNOMINMAX -DWIN32_LEAN_AND_MEAN
+
+LDFLAGS+=-g -Wall
+
+ifeq ($(OSTYPE),windows)
+CFLAGS+=-std:c++17
+else
+CFLAGS+=-std=c++17
+endif
+
+%$(O): tests/%.cpp
+	$(CXX) $(CFLAGS) -c $^ -o $@
+
+%$(O): %.cpp
+	$(CXX) -c $^ -o $@ $(cflags_$(basename $(notdir $@))) $(CFLAGS)
+
+%: %$(O)
+	$(CXX)    $^ -o $@ $(ldflags_$(basename $(notdir $@))) $(LDFLAGS)
+
+install:
+	cp idbtool ~/bin/
+
+pull:
+	git submodule update --recursive --remote
+
+
