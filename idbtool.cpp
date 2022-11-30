@@ -331,17 +331,31 @@ std::string timestring(uint32_t t)
 
 void dumplicense(const char *tag, const std::string& user)
 {
-    if (user.size()!=127)
+    if (user.size()<127)
         return;
 
     auto et = EndianTools();
+
+    // if non zero data at offset 106, assume this is an invalid license blob.
     if (et.getle32(&user[106], &user[110]))
         return;
+
     uint16_t licver= et.getle16(&user[2], &user[0]+user.size());
     if (licver==0) {
         // before v5.3
-        std::string licensee= (char*)&user[20];
-        print("%s %s   %s\n", tag, timestring(et.getle32(&user[4], &user[0]+user.size())), licensee);
+        auto ts = et.getle32(&user[4], &user[8]);
+        if (ts) {
+            std::string licensee= (char*)&user[20];
+            auto fl = et.getle32(&user[16], &user[20]);
+            print("%s %s [%08x]  %s\n", tag, timestring(ts), fl, licensee);
+        }
+        else {
+            auto ts = et.getle32(&user[0x17], &user[0x1b]);
+            auto fl = et.getle32(&user[0x23], &user[0x27]);
+            std::string licensee= (char*)&user[0x27];
+            print("%s %s [%08x]  %s\n", tag, timestring(ts), fl, licensee);
+
+        }
     }
     else {
         std::string licensee= (char*)&user[34];
