@@ -10,13 +10,13 @@
 #include <algorithm>
 #include <climits>
 #include "idb3.h"
-#include "argparse.h"
+#include <cpputils/argparse.h>
 
 #ifdef HAVE_LIBGMP
 #include "gmpxx.h"
 #endif
-#include "formatter.h"
-#include "stringlibrary.h"
+#include <cpputils/formatter.h>
+#include <cpputils/stringlibrary.h>
 
 int verbose = 0;
 

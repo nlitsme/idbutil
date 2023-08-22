@@ -1,5 +1,9 @@
+if (TARGET cpputils)
+    return()
+endif()
+
 # NOTE: you can avoid downloading cpputils, by symlinking to a downloaded version here:
-find_path(CPPUTILS_DIR NAMES string-lineenum.h PATHS symlinks/cpputils)
+find_path(CPPUTILS_DIR NAMES include/cpputils/string-lineenum.h PATHS symlinks/cpputils)
 if(CPPUTILS_DIR STREQUAL "CPPUTILS_DIR-NOTFOUND")
     include(FetchContent)
     FetchContent_Populate(cpputils
@@ -13,4 +17,3 @@ add_subdirectory(${CPPUTILS_DIR} ${cpputils_BINARY_DIR})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(cpputils REQUIRED_VARS CPPUTILS_DIR)
-
