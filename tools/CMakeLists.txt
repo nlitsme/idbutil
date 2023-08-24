@@ -1,0 +1,5 @@
+add_executable(idbtool idbtool.cpp)
+target_link_libraries(idbtool PRIVATE idasdk idblib cpputils)
+if (TARGET gmp)
+    target_link_libraries(idbtool PRIVATE gmp)
+endif()
