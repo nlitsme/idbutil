@@ -1,7 +1,7 @@
 #include "unittestframework.h"
 
 #include <climits>
-#include "idb3.h"
+#include <idblib/idb3.h>
 
 std::string CreateTestIndexPage(int pagesize)
 {
