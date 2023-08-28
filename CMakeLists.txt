@@ -5,7 +5,7 @@ include(boilerplate)
 
 find_package(idasdk REQUIRED)
 find_package(cpputils REQUIRED)
-find_package(gmp)
+find_package(libgmp)
 
 add_library(idblib INTERFACE)
 target_include_directories(idblib INTERFACE include)

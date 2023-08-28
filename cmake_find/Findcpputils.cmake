@@ -3,7 +3,7 @@ if (TARGET cpputils)
 endif()
 
 # NOTE: you can avoid downloading cpputils, by symlinking to a downloaded version here:
-find_path(CPPUTILS_DIR NAMES include/cpputils/string-lineenum.h PATHS symlinks/cpputils)
+find_path(CPPUTILS_DIR NAMES include/cpputils/string-lineenum.h PATHS ${CMAKE_SOURCE_DIR}/symlinks/cpputils)
 if(CPPUTILS_DIR STREQUAL "CPPUTILS_DIR-NOTFOUND")
     include(FetchContent)
     FetchContent_Populate(cpputils

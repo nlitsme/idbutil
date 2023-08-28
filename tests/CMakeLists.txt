@@ -7,5 +7,9 @@ target_link_libraries(idbutil_unittests PRIVATE cpputils idblib doctest::doctest
 target_compile_definitions(idbutil_unittests PRIVATE WITH_DOCTEST)
 
 include(CTest)
-include(doctest)
-doctest_discover_tests(idbutil_unittests)
+include(doctest OPTIONAL RESULT_VARIABLE res)
+if (res STREQUAL NOTFOUND)
+    add_test(NAME IdbutilTest COMMAND idbutil_unittests)
+else()
+    doctest_discover_tests(idbutil_unittests)
+endif()
