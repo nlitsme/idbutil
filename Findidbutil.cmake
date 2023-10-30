@@ -1,7 +1,7 @@
 if (TARGET idbutil)
     return()
 endif()
-find_path(IDBUTIL_DIR NAMES include/idblib/idb3.h PATHS symlinks/idbutil)
+find_path(IDBUTIL_DIR NAMES include/idblib/idb3.h PATHS ${CMAKE_SOURCE_DIR}/symlinks/idbutil)
 if(IDBUTIL_DIR STREQUAL "IDBUTIL_DIR-NOTFOUND")
     include(FetchContent)
     FetchContent_Populate(idbutil
