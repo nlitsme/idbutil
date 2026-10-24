@@ -346,7 +346,9 @@ protected:
             return 0;
         auto want = std::min(std::streamsize(_last-_first - _curpos), n);
         //auto got = _is->readsome(s, want);
-        _is->read(s, want);  auto got = want;
+        _is->seekg(_first + _curpos);
+        _is->read(s, want);
+        auto got = _is->gcount();
         _curpos += got;
 
         return got;
@@ -355,6 +357,7 @@ protected:
     {
         if (_curpos >= (_last-_first))
             return traits_type::eof();
+        _is->seekg(_first + _curpos);
         int r = _is->peek();
         return r;
     }
@@ -362,6 +365,7 @@ protected:
     {
         if (_curpos >= (_last-_first))
             return traits_type::eof();
+        _is->seekg(_first + _curpos);
         int r = _is->get();
         if (r==traits_type::eof())
             return traits_type::eof();
@@ -1394,7 +1398,7 @@ public:
         auto endkey =  makekey(nodeid, tag, lastid);
 
         std::string blob;
-        while (c.getkey() <= endkey) {
+        while (!c.eof() && c.getkey() < endkey) {
             blob += c.getval();
             c.next();
         }
@@ -1522,7 +1526,7 @@ private:
             (void)unk1; (void)unk2;  (void)npages;  // values not used
 
             _segments.resize(nsegments);
-            uint32_t ofs= 0x2000;
+            uint64_t ofs= 0x2000;
             for (unsigned i=0 ; i<nsegments ; i++) {
                 auto &seg= _segments[i];
                 seg.start_ea = s.getword();
@@ -2217,7 +2221,7 @@ public:
     {
         _endkey = _id0.makekey(nodeid, 'A', -1);
     }
-    bool eof() const { return !(_c.getkey() < _endkey); }
+    bool eof() const { return _c.eof() || !(_c.getkey() < _endkey); }
     T next() 
     { 
         uint64_t id = minusone(_id0.getuint(_c));
