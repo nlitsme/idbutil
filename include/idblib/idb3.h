@@ -1420,8 +1420,10 @@ public:
     {
         auto c = _bt->find(REL_GREATER_EQUAL, makekey(nodeid, tag));
         auto endkey = makekey(nodeid, tag+1);
-        while (c.getkey() <= endkey)
+        while (c.getkey() <= endkey) {
             cb(NodeValues::getint(c.getval()));
+            c.next();
+        }
     }
 
     // 'easy' interface: return empty when record not found.
@@ -1483,9 +1485,9 @@ public:
 // basically this is the data for the idc GetFlags(ea)  function.
 class ID1File {
     struct segment {
-        uint32_t start_ea;
-        uint32_t end_ea;
-        uint32_t id1ofs;
+        uint64_t start_ea;
+        uint64_t end_ea;
+        uint64_t id1ofs;
     };
     typedef std::vector<segment> segmentlist_t;
     segmentlist_t _segments;
